@@ -231,10 +231,10 @@
 
   <div class="profile-card">
     <div class="profile-header">
-      <div class="avatar">{{ request.user.username|slice:":1"|upper }}</div>
+      <div class="avatar">{{ username |slice:":1"|upper }}</div>
       <div>
-        <div class="profile-name">{{ request.user.username }}</div>
-        <div class="profile-sub">{{ request.user.email }}</div>
+        <div class="profile-name">{{ username }}</div>
+        <div class="profile-sub">Standard User</div>
       </div>
     </div>
     <div class="stat-row">
