@@ -1,18 +1,20 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Movie, AppUser
-
+from .models import Song, Playlist, AppUser, SpotifyAccount
+from urllib.parse import urlencode
+from django.conf import settings
+from .utils import exchange_code_for_tokens
 """
 
 GOAL OF PROJECT:
-Create an app that prompts users for taste in movies
-Calculate their taste and display movies based on taste
-Create example user records to create an average user's taste
+Create an app that allows users see playlists, other user's songs, and favorite genres
+Implement rate limiting
+Hand out access tokens after authentication to control rates
+
 
 
 Potential features and additions:
-Integrate a movie api to fetch data on movies
-Create visual graph to display average movie taste and compare it to user
+
 
 """
 
@@ -22,40 +24,27 @@ def home(request):
         return redirect("login")
     user = AppUser.objects.get(id=user_id)
     if request.method == "POST":
-        action = request.POST.get("action")
-        movie_id = request.POST.get("movie_id")
-        if action == "add": 
-            movie = Movie.objects.filter(id=movie_id).first()
-            if (movie):
-                user.movie_list.add(movie)
+        action = request.POST.get("action") 
+        if action == "disconnect": # handles logout button post request
+            SpotifyAccount.objects.filter(user=user).delete()
             return redirect("home")
-        elif action == "remove":
-            movie = user.movie_list.get(id=movie_id)
-            user.movie_list.remove(movie_id)
-            return redirect("home")
-        
-    movies = Movie.objects.all()
-    movie_list = user.movie_list.all()
-    unadded_list = []
-    
-    for movie in movies: # iterates through user-liked movies and adds only unliked movies to the master list
-        if movie not in movie_list:
-            unadded_list.append(movie)
 
-    favorite_genres = genre_handler(user)
-
-    context = { # passes these variables to html file
-        "unadded_movies": unadded_list,
-        "movie_list": movie_list,
-        "favorite_genres": favorite_genres,
-        "username": user.username,
+    context = {
+        "user": user,
+        "spotify_profile": SpotifyAccount.objects.filter(user=user).first(),
+        "top_artists": "top_artists",
+        "playlist_count": "playlist_count",
     }
     return render(request, "home.html", context)
-def login_view(request):
+def login_view(request): # also implement a way to get rid of logged in tokens when clicking log out
     if request.method == "POST":
+        print(request.POST)
+        print(request.method)
         username = request.POST.get("username")
         password = request.POST.get("password")
         user = AppUser.objects.filter(username=username).first()
+        if not username or not password: 
+            return render(request, "login.html")
         if not user: # case: username not found
             error = f"User not found with username \"{username}\""
             return render(request, "login.html", {"error": error})
@@ -67,6 +56,9 @@ def login_view(request):
         request.session["app_user_id"] = user.id
         return redirect("home")
     return render(request, "login.html")
+def logout_view(request):
+    request.session.pop("app_user_id", None)
+    return redirect("login")
 def register(request):
     print("METHOD: ", request.method)
     if request.method == "POST":
@@ -89,28 +81,45 @@ def register(request):
         return redirect("home")
 
     return render(request, "register.html")
-def genre_handler(user):
-    movie_list = user.movie_list.all()
+def spotify_callback(request):
+    callback_code = request.GET.get("code")
+    if not callback_code:
+        print("error: callback error")
+        return redirect("home") # FUTURE: need error message to pop up 
 
-    favorite_genres = []
-    genre_counter = {}
-    for movie in movie_list: # counting user's favorite genres
-        for genre in movie.genres:
-            if genre not in genre_counter:
-                genre_counter[genre] = 1
-            else:
-                genre_counter[genre] += 1
-    while genre_counter:
-        temp = -1
-        name = ""
-        for genre, count in genre_counter.items():
-            if temp <= count:
-                temp = count
-                name = genre
-        favorite_genres.append(name)
-        del genre_counter[name]
+    user = AppUser.objects.get(id=request.session["app_user_id"])
+    token_data = exchange_code_for_tokens(callback_code, user)
+    if token_data is None:
+        return redirect("home")  # exchange failed
 
-    while (len(favorite_genres) > 3): # only return the top 3 genres
-        favorite_genres.pop()
+    access_token = token_data["access_token"]
+    refresh_token = token_data["refresh_token"]
+    expires_in = token_data["expires_in"]
+    # spotify_account = SpotifyAccount.objects.create(user=user)
+    # spotify_account.save()
 
-    return favorite_genres
+    return redirect("home")
+
+def spotify_login(request):
+    client_id = settings.CLIENT_ID
+    params = {
+        "client_id": client_id,
+        "response_type": "code",
+        "redirect_uri": "http://127.0.0.1:8000/spotify/callback/",
+        "scope": ("user-read-playback-state "
+        "playlist-read-private "
+        "user-top-read "
+        "user-read-recently-played"),
+        "show_dialog": "true",
+    }
+
+    spotify_auth_url = (
+        "https://accounts.spotify.com/authorize?"
+        + urlencode(params)
+    )
+
+    return redirect(spotify_auth_url)
+def refresh_playlists(request):
+    return redirect("home")
+def refresh_top_tracks(request):
+    return redirect("home")

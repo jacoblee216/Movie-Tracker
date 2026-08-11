@@ -1,261 +1,456 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Movies</title>
-  <style>
-    :root {
-      --bg: #0f1115;
-      --panel: #171a21;
-      --border: #2a2f3a;
-      --text: #e7e9ee;
-      --muted: #8a90a0;
-      --accent: #4f8dfd;
-      --danger: #e5566d;
-      --profile-bg: #1b2230;
-      --profile-border: #35446b;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spotify Dashboard</title>
 
-    * { box-sizing: border-box; }
+<style>
+:root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --border: #2a2f3a;
+    --text: #e7e9ee;
+    --muted: #8a90a0;
+    --accent: #1DB954;
+    --danger: #e5566d;
+    --profile-bg: #162019;
+    --profile-border: #2f5d39;
+}
 
-    html, body {
-      margin: 0;
-      height: 100%;
-      background: var(--bg);
-      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-      color: var(--text);
-    }
+* {
+    box-sizing: border-box;
+}
 
-    body {
-      display: flex;
-      align-items: flex-start;
-      gap: 24px;
-      padding: 24px;
-      flex-wrap: wrap;
-    }
+html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    font-family: "Segoe UI", system-ui, sans-serif;
+    color: var(--text);
+}
 
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 20px 24px;
-      width: 320px;
-      height: 500px;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-    }
+body {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding: 24px;
+}
 
-    h1 {
-      font-size: 18px;
-      margin: 0 0 14px;
-      flex-shrink: 0;
-    }
+/* Page Header */
 
-    ul {
-      list-style: none;
-      margin: 0;
-      padding: 0 4px 0 0;
-      flex: 1;
-      overflow-y: auto;
-    }
+.page-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+}
 
-    ul::-webkit-scrollbar {
-      width: 6px;
-    }
+.page-header .greeting {
+    font-size: 20px;
+    font-weight: 600;
+}
 
-    ul::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 3px;
-    }
+.page-header .greeting span {
+    color: var(--muted);
+    font-weight: 400;
+}
 
-    li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-    }
+.logout-button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+}
 
-    li:last-child {
-      border-bottom: none;
-    }
+.logout-button:hover {
+    background: var(--panel);
+    opacity: 1;
+}
 
-    .title {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      padding-right: 10px;
-    }
+/* Cards */
 
-    .added {
-      color: var(--muted);
-      font-size: 12px;
-      flex-shrink: 0;
-    }
+.card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    width: 320px;
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
 
-    button {
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 4px 10px;
-      font-size: 12px;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
+h1 {
+    font-size: 18px;
+    margin: 0 0 14px;
+    flex-shrink: 0;
+}
 
-    button:hover {
-      opacity: 0.85;
-    }
-    button.remove {
-      background: var(--danger);
-    }
-    /* Profile card: bigger, distinct style */
-    .profile-card {
-      background: var(--profile-bg);
-      border: 1px solid var(--profile-border);
-      border-radius: 14px;
-      padding: 28px 32px;
-      width: 380px;
-      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
-    }
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    flex-shrink: 0;
+}
 
-    .profile-header {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 20px;
-    }
+.card-header h1 {
+    margin: 0;
+}
 
-    .avatar {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      background: var(--accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      font-weight: 600;
-      color: white;
-      flex-shrink: 0;
-    }
+.refresh-button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 5px 10px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
 
-    .profile-name {
-      font-size: 17px;
-      font-weight: 600;
-    }
+.refresh-button:hover {
+    color: var(--text);
+    border-color: var(--accent);
+    opacity: 1;
+}
 
-    .profile-sub {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 2px;
-    }
+.refresh-button svg {
+    width: 11px;
+    height: 11px;
+}
 
-    .stat-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 12px 0;
-      border-top: 1px solid var(--profile-border);
-      font-size: 13px;
-    }
+ul {
+    list-style: none;
+    margin: 0;
+    padding: 0 4px 0 0;
+    flex: 1;
+    overflow-y: auto;
+}
 
-    .stat-label {
-      color: var(--muted);
-    }
-    .genre-box {
-  margin-top: 20px;
-  padding: 14px;
-  border: 1px solid var(--profile-border);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  }
+ul::-webkit-scrollbar {
+    width: 6px;
+}
 
-  .genre-title {
+ul::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+}
+
+li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+}
+
+li:last-child {
+    border-bottom: none;
+}
+
+.title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 10px;
+}
+
+.added {
+    color: var(--muted);
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+/* Buttons */
+
+button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+
+button.remove {
+    background: var(--danger);
+}
+
+/* Profile Card */
+
+.profile-card {
+    background: var(--profile-bg);
+    border: 1px solid var(--profile-border);
+    border-radius: 14px;
+    padding: 28px 32px;
+    width: 380px;
+    box-shadow: 0 14px 36px rgba(0,0,0,.45);
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    flex-shrink: 0;
+}
+
+.profile-name {
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.profile-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-top: 1px solid var(--profile-border);
+    font-size: 13px;
+}
+
+.stat-label {
+    color: var(--muted);
+}
+
+.genre-box {
+    margin-top: 20px;
+    padding: 14px;
+    border: 1px solid var(--profile-border);
+    border-radius: 10px;
+    background: rgba(255,255,255,.03);
+}
+
+.genre-title {
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 10px;
-  }
+}
 
-  .genre-list {
+.genre-list {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-  }
+}
 
-  .genre-tag {
+.genre-tag {
     background: var(--accent);
     color: white;
     padding: 6px 10px;
     border-radius: 999px;
     font-size: 12px;
     font-weight: 500;
-  }
-  
-  </style>
+}
+
+.spotify-button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 600;
+}
+</style>
 </head>
+
 <body>
-  <div class="card">
-    <h1>Movies</h1>
-    <ul>
-      {% for movie in unadded_movies %}
-      <li>
-        <span class="title">{{ movie.name }}</span>
-        <form method="POST">
-          {% csrf_token %}
-          <input type="hidden" name="movie_id" value="{{ movie.id }}">
-          <button type="submit" name ="action" value="add">Add</button>
-        </form>
-      </li>
-      {% endfor %}
-    </ul>
-  </div>
 
-  <div class="card">
-    <h1>My Movie List</h1>
-    <ul>
-      {% for movie in movie_list %}
-      <li>
-        <span class="title">{{ movie.name }}</span>
-        <form method="POST">
-          {% csrf_token %}
-          <input type="hidden" name="movie_id" value="{{ movie.id }}">
-          <button type="submit" class = "remove" name ="action" value="remove">Remove</button>
-        </form>
-      </li>
-      {% endfor %}
-    </ul>
-  </div>
+<!-- Page Header -->
 
-  <div class="profile-card">
-    <div class="profile-header">
-      <div class="avatar">{{ username |slice:":1"|upper }}</div>
-      <div>
-        <div class="profile-name">{{ username }}</div>
-        <div class="profile-sub">Standard User</div>
-      </div>
+<div class="page-header">
+    <div class="greeting">
+        {{ user.username }} <span>&mdash; Dashboard</span>
     </div>
-    <div class="stat-row">
-      <span class="stat-label">Movies liked</span>
-      <span>{{ movie_list|length }}</span>
-    </div>
-    <div class="stat-row">
-      <span class="stat-label">Member since</span>
-      <span>{{ request.user.date_joined|date:"M Y" }}</span>
-    </div>
-    <div class="genre-box">
-    <div class="genre-title">Favorite Genres</div>
 
-    <div class="genre-list">
-        {% for genre in favorite_genres %}
-            <span class="genre-tag">{{ genre }}</span>
-        {% empty %}
-            <span class="profile-sub">No favorite genres yet.</span>
-        {% endfor %}
-    </div>
+    <form method="POST" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button class="logout-button" type="submit">
+            Log Out
+        </button>
+    </form>
 </div>
-  </div>
+
+<!-- Top Tracks -->
+
+<div class="card">
+    <div class="card-header">
+        <h1>Top Tracks</h1>
+        <form method="GET" action="{% url 'refresh_top_tracks' %}">
+            <button class="refresh-button" type="submit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                Refresh
+            </button>
+        </form>
+    </div>
+
+    <ul>
+        {% for track in top_tracks %}
+        <li>
+            <span class="title">{{ track.name }}</span>
+            <span class="added">{{ track.artist }}</span>
+        </li>
+        {% empty %}
+        <li>
+            <span class="title">No tracks available</span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- Playlists -->
+
+<div class="card">
+    <div class="card-header">
+        <h1>My Playlists</h1>
+        <form method="GET" action="{% url 'refresh_playlists' %}">
+            <button class="refresh-button" type="submit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                Refresh
+            </button>
+        </form>
+    </div>
+
+    <ul>
+        {% for playlist in playlists %}
+        <li>
+            <span class="title">{{ playlist.name }}</span>
+            <span class="added">{{ playlist.track_count }} songs</span>
+        </li>
+        {% empty %}
+        <li>
+            <span class="title">No playlists available</span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- Spotify Profile -->
+
+<div class="profile-card">
+
+    <div class="profile-header">
+        <div class="avatar">
+            {{ username|slice:":1"|upper }}
+        </div>
+
+        <div>
+            <div class="profile-name">
+                {% if spotify_connected %}
+                    {{ spotify_profile.display_name }}
+                {% else %}
+                    Spotify Not Connected
+                {% endif %}
+            </div>
+
+            <div class="profile-sub">
+                {% if spotify_connected %}
+                    Connected to Spotify
+                {% else %}
+                    Connect your Spotify account
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-row">
+        <span class="stat-label">Followers</span>
+        <span>
+            {% if spotify_connected %}
+                {{ spotify_profile.followers.total }}
+            {% else %}
+                -
+            {% endif %}
+        </span>
+    </div>
+
+    <div class="stat-row">
+        <span class="stat-label">Country</span>
+        <span>
+            {% if spotify_connected %}
+                {{ spotify_profile.country }}
+            {% else %}
+                -
+            {% endif %}
+        </span>
+    </div>
+
+    <div class="stat-row">
+        <span class="stat-label">Playlists</span>
+        <span>{{ playlists|length }}</span>
+    </div>
+
+    <div class="stat-row">
+        <span class="stat-label">Top Tracks</span>
+        <span>{{ top_tracks|length }}</span>
+    </div>
+
+    <div class="genre-box">
+        <div class="genre-title">Favorite Genres</div>
+
+        <div class="genre-list">
+            {% for genre in favorite_genres %}
+                <span class="genre-tag">{{ genre }}</span>
+            {% empty %}
+                <span class="profile-sub">
+                    No genre data available.
+                </span>
+            {% endfor %}
+        </div>
+    </div>
+
+{% if spotify_connected %}
+
+<form method="POST">
+    {% csrf_token %}
+    <button
+        class="remove spotify-button"
+        type="submit"
+        name="action"
+        value="disconnect">
+        Disconnect Spotify
+    </button>
+</form>
+
+{% else %}
+
+<a href="{% url 'spotify_login' %}">
+    <button class="spotify-button" type="button">
+        Connect Spotify
+    </button>
+</a>
+
+{% endif %}
+
+</div>
+
 </body>
 </html>

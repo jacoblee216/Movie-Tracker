@@ -22,5 +22,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("", views.home, name="home"),
     path('login/', views.login_view, name="login"),
-    path('register/', views.register, name="register")
+    path('logout/', views.login_view, name="logout"),
+    path('register/', views.register, name="register"),
+    path('spotify/login', views.spotify_login, name="spotify_login"),
+    path('spotify/callback/', views.spotify_callback, name='spotify_callback'),
+    path('refresh/playlists', views.refresh_playlists, name='refresh_playlists'),
+    path('refresh_top_tracks/', views.refresh_top_tracks, name='refresh_top_tracks'),
 ]

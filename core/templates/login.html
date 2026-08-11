@@ -137,15 +137,15 @@
     </div>
     {% endif %}
 
-    <form method="POST">
+    <form method="POST" autocomplete="off">
       {% csrf_token %}
       <div class="field">
         <label for="id_username">Username</label>
-        <input type="text" name="username" id="id_username" autofocus>
+        <input type="text" name="username" value = "" autofocus autocomplete = "off">
       </div>
       <div class="field">
         <label for="id_password">Password</label>
-        <input type="password" name="password" id="id_password">
+        <input type="password" name="password" value ="" autocomplete = "off">
       </div>
       <button type="submit">Log In</button>
       <input type="hidden" name="next" value="{{ next }}">
