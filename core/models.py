@@ -31,10 +31,11 @@ class SpotifyAccount(models.Model):
     refresh_token = models.TextField()
     token_expires_at = models.DateTimeField()
 
+    country = models.CharField(max_length=25,default="")
     follower_count = models.PositiveIntegerField(default=0)
-    profile_image_url = models.URLField(blank=True)
+    profile_image_url = models.CharField(max_length=100,blank=True)
     spotify_id = models.CharField(max_length=255,unique=True)
-    spotify_name = models.CharField(max_length=25)
+    spotify_name = models.CharField(max_length=25, default="")
     
 
     connected_at = models.DateTimeField(auto_now_add=True)

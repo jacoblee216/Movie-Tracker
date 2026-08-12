@@ -4,6 +4,8 @@ from .models import Song, Playlist, AppUser, SpotifyAccount
 from urllib.parse import urlencode
 from django.conf import settings
 from .utils import exchange_code_for_tokens
+from django.contrib import messages
+from django.contrib.messages import get_messages
 """
 
 GOAL OF PROJECT:
@@ -15,6 +17,10 @@ Hand out access tokens after authentication to control rates
 
 Potential features and additions:
 
+
+TO DO:
+Get playlists 
+Get top tracks
 
 """
 
@@ -84,20 +90,15 @@ def register(request):
 def spotify_callback(request):
     callback_code = request.GET.get("code")
     if not callback_code:
-        print("error: callback error")
+        messages.error(request, "Spotify authorization failed. Please try again.")
         return redirect("home") # FUTURE: need error message to pop up 
 
     user = AppUser.objects.get(id=request.session["app_user_id"])
-    token_data = exchange_code_for_tokens(callback_code, user)
-    if token_data is None:
+    if not exchange_code_for_tokens(callback_code, user):
+        messages.error(request, "Couldn't connect your spotify account. Please try again.")
         return redirect("home")  # exchange failed
-
-    access_token = token_data["access_token"]
-    refresh_token = token_data["refresh_token"]
-    expires_in = token_data["expires_in"]
-    # spotify_account = SpotifyAccount.objects.create(user=user)
-    # spotify_account.save()
-
+    
+    messages.success(request, "Spotify account connected successfully.")
     return redirect("home")
 
 def spotify_login(request):
@@ -109,7 +110,8 @@ def spotify_login(request):
         "scope": ("user-read-playback-state "
         "playlist-read-private "
         "user-top-read "
-        "user-read-recently-played"),
+        "user-read-recently-played "
+        "user-read-private"),
         "show_dialog": "true",
     }
 

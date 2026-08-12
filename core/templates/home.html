@@ -6,6 +6,12 @@
 <title>Spotify Dashboard</title>
 
 <style>
+.message.error {
+color: var(--danger);
+}
+.message.success {
+    color: var(--accent);
+}
 :root {
     --bg: #0f1115;
     --panel: #171a21;
@@ -283,7 +289,15 @@ button.remove {
 </head>
 
 <body>
-
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+    <div class="message {{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
 <!-- Page Header -->
 
 <div class="page-header">
@@ -359,20 +373,24 @@ button.remove {
 
     <div class="profile-header">
         <div class="avatar">
-            {{ username|slice:":1"|upper }}
+            {% if spotify_profile %}
+                {{spotify_profile.profile_image_url}}
+            {% else %} 
+                {{ username|slice:":1"|upper }}
+            {% endif %}
         </div>
 
         <div>
             <div class="profile-name">
-                {% if spotify_connected %}
-                    {{ spotify_profile.display_name }}
+                {% if spotify_profile %} <!--fix parameters passed from home view-->
+                    {{ spotify_profile.spotify_name }}
                 {% else %}
                     Spotify Not Connected
                 {% endif %}
             </div>
 
             <div class="profile-sub">
-                {% if spotify_connected %}
+                {% if spotify_profile %}
                     Connected to Spotify
                 {% else %}
                     Connect your Spotify account
@@ -384,8 +402,8 @@ button.remove {
     <div class="stat-row">
         <span class="stat-label">Followers</span>
         <span>
-            {% if spotify_connected %}
-                {{ spotify_profile.followers.total }}
+            {% if spotify_profile %}
+                {{ spotify_profile.follower_count }}
             {% else %}
                 -
             {% endif %}
@@ -427,7 +445,7 @@ button.remove {
         </div>
     </div>
 
-{% if spotify_connected %}
+{% if spotify_profile %}
 
 <form method="POST">
     {% csrf_token %}
