@@ -4,6 +4,8 @@ from django.contrib.auth.hashers import make_password, check_password
 class Song(models.Model):
     name = models.CharField(max_length = 25)
     genres = models.JSONField(default=list)
+    artists = models.CharField(max_length=25, default="None")
+
 
 class AppUser(models.Model):
     username = models.CharField(max_length=150, unique=True)
@@ -15,11 +17,6 @@ class AppUser(models.Model):
 
     def check_password(self, raw_password):
         return check_password(raw_password, self.password_hash)
-
-class Playlist(models.Model):
-    user = models.ForeignKey(AppUser, on_delete=models.CASCADE, related_name="playlists")
-    name = models.CharField(max_length = 25)
-    songs = models.ManyToManyField(Song, related_name="playlists")
 
 class SpotifyAccount(models.Model):
     user = models.OneToOneField(
@@ -40,3 +37,9 @@ class SpotifyAccount(models.Model):
 
     connected_at = models.DateTimeField(auto_now_add=True)
     last_refreshed_at = models.DateTimeField(auto_now_add=True)
+
+class Playlist(models.Model):
+    spotify_user = models.ForeignKey(SpotifyAccount, on_delete=models.CASCADE, related_name="playlists")
+    playlist_id = models.CharField(max_length=50, default="None")
+    name = models.CharField(max_length = 25)
+    songs = models.ManyToManyField(Song, related_name="playlists")

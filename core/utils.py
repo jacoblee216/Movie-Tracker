@@ -1,4 +1,4 @@
-from .models import AppUser, SpotifyAccount
+from .models import AppUser, SpotifyAccount, Playlist, Song
 import requests
 from django.conf import settings
 from datetime import timedelta
@@ -6,6 +6,7 @@ from django.utils import timezone
 
 
 def exchange_code_for_tokens(callback_code, user): # need to write another request for display_name and spotify_id
+    print(f"Token exchange attempt with code: {callback_code[:15]}...")
     response = requests.post(
     "https://accounts.spotify.com/api/token",   # URL — this is Spotify's fixed endpoint for token exchange
     data={                                        # the BODY of the request — form fields Spotify expects
@@ -16,9 +17,9 @@ def exchange_code_for_tokens(callback_code, user): # need to write another reque
         "client_secret": settings.CLIENT_SECRET,
     },
 )
-
+    print("Token exchange status:", response.status_code)
     if response.status_code != 200:
-        print("General response failed")
+        print("General request failed")
         print(response.text)
         return False
     else:
@@ -29,7 +30,7 @@ def exchange_code_for_tokens(callback_code, user): # need to write another reque
         headers={"Authorization": f"Bearer {token_data['access_token']}"},
     )
         if user_response.status_code != 200:
-            print("User response failed")
+            print("User request failed")
             print(user_response.text)
             return False
         
@@ -47,5 +48,60 @@ def exchange_code_for_tokens(callback_code, user): # need to write another reque
 
             },
         )
-        print(f"profile_image_url = '{spotify_account.profile_image_url}'")
+        if not exchange_code_for_playlist(callback_code, spotify_account):
+            return False
         return True
+def exchange_code_for_playlist(callback_code, spotify_account):
+    playlist_response = requests.get(
+        "https://api.spotify.com/v1/me/playlists",
+        headers={"Authorization": f"Bearer {spotify_account.access_token}"},
+    )
+    if playlist_response.status_code != 200:
+        print("Playlist request failed.")
+        print(playlist_response.text)
+        return False
+    playlist_data = playlist_response.json()
+    print("Total playlists:", playlist_data["total"])
+
+    if playlist_data["items"]:
+        for playlist in playlist_data["items"]:
+            user_playlist, created = Playlist.objects.update_or_create(
+                spotify_user=spotify_account,
+                defaults={
+                    "name": playlist["name"],
+                    "playlist_id": playlist["id"],
+                },
+            )
+            add_songs(playlist["id"], spotify_account)
+    else:
+        print("No playlists found for this user.")
+    return True
+
+def add_songs(playlist_id, spotify_account): # function to add songs to playlist object 
+    song_response= requests.get( # find way to tracks
+        f"https://api.spotify.com/v1/playlists/{playlist_id}/items",
+        headers={"Authorization": f"Bearer {spotify_account.access_token}"},
+    )
+    if song_response.status_code != 200:
+        print("Song request failed.")
+        print(song_response.text)
+        return False
+    song_data = song_response.json()
+    for entry in song_data["items"]:
+        track = entry.get("item")
+        if not track:
+            continue  # skip this entry, move to the next song
+        artist_names = [artist["name"] for artist in track["artists"]]
+        name = track["name"]
+        print(f"Song Name: {name}")
+        if entry["is_local"] == True:
+            print("Local File Song")
+            continue
+        playlist_song = Playlist.get(playlist_id = playlist_id, spotify_user=spotify_account) # need to work on adding songs to playlist objects
+
+            # playlist_song, created = Song.objects.update_or_create(
+            #     defaults={
+            #         "name": song["item"][""]
+            #     }
+            # )
+
