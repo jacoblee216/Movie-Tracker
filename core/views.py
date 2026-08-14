@@ -37,6 +37,7 @@ def home(request):
             SpotifyAccount.objects.filter(user=user).delete()
             return redirect("home")
     spotify_profile = SpotifyAccount.objects.filter(user=user).first()
+    playlists = Playlist.objects.none()  # default: empty queryset
     if spotify_profile:         
         playlists = spotify_profile.playlists.all().order_by('-song_count')
     context = {
