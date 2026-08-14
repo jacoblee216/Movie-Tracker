@@ -6,6 +6,29 @@
 <title>Spotify Dashboard</title>
 
 <style>
+.song-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.song-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.song-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #888;
+}
+
+.song-artists {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: #888;
+    margin-top: 2px;
+}
 .message.error {
 color: var(--danger);
 }
@@ -285,6 +308,7 @@ button.remove {
     font-size: 14px;
     font-weight: 600;
 }
+
 </style>
 </head>
 
@@ -341,7 +365,6 @@ button.remove {
 </div>
 
 <!-- Playlists -->
-
 <div class="card">
     <div class="card-header">
         <h1>My Playlists</h1>
@@ -356,8 +379,29 @@ button.remove {
     <ul>
         {% for playlist in playlists %}
         <li>
-            <span class="title">{{ playlist.name }}</span>
-            <span class="added">{{ playlist.track_count }} songs</span>
+            {% if playlist.song_count > 0 %}
+            <details class="playlist-dropdown">
+                <summary>
+                    <span class="title">{{ playlist.name }}</span>
+                    <span class="added">{{ playlist.song_count }} songs</span>
+                </summary>
+                    <ul class="song-list">
+                        {% for song in playlist.songs.all %}
+                        <li>
+                            <div class="song-info">
+                                <span class="song-name">{{ song.name }}</span>
+                                <span class="song-artists">{{ song.artists }}</span>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+            </details>
+            {% else %}
+            <div class="playlist-row">
+                <span class="title">{{ playlist.name }}</span>
+                <span class="added">{{ playlist.song_count }} songs</span>
+            </div>
+            {% endif %}
         </li>
         {% empty %}
         <li>

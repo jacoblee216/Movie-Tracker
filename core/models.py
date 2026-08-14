@@ -5,6 +5,8 @@ class Song(models.Model):
     name = models.CharField(max_length = 25)
     genres = models.JSONField(default=list)
     artists = models.CharField(max_length=25, default="None")
+    song_id = models.CharField(max_length=30, null=True)
+
 
 
 class AppUser(models.Model):
@@ -42,4 +44,5 @@ class Playlist(models.Model):
     spotify_user = models.ForeignKey(SpotifyAccount, on_delete=models.CASCADE, related_name="playlists")
     playlist_id = models.CharField(max_length=50, default="None")
     name = models.CharField(max_length = 25)
-    songs = models.ManyToManyField(Song, related_name="playlists")
+    songs = models.ManyToManyField(Song, related_name="songs")
+    song_count = models.IntegerField(default=0)

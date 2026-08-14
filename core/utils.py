@@ -67,11 +67,12 @@ def exchange_code_for_playlist(callback_code, spotify_account):
         for playlist in playlist_data["items"]:
             user_playlist, created = Playlist.objects.update_or_create(
                 spotify_user=spotify_account,
+                playlist_id=playlist["id"],
                 defaults={
                     "name": playlist["name"],
-                    "playlist_id": playlist["id"],
                 },
             )
+            print(playlist["name"])
             add_songs(playlist["id"], spotify_account)
     else:
         print("No playlists found for this user.")
@@ -87,21 +88,30 @@ def add_songs(playlist_id, spotify_account): # function to add songs to playlist
         print(song_response.text)
         return False
     song_data = song_response.json()
+    songs = []
+    song_count = 0
     for entry in song_data["items"]:
         track = entry.get("item")
         if not track:
             continue  # skip this entry, move to the next song
-        artist_names = [artist["name"] for artist in track["artists"]]
-        name = track["name"]
-        print(f"Song Name: {name}")
         if entry["is_local"] == True:
-            print("Local File Song")
-            continue
-        playlist_song = Playlist.get(playlist_id = playlist_id, spotify_user=spotify_account) # need to work on adding songs to playlist objects
+            artist_names = "Local File Song"
+        else:
+            artist_names = [artist["name"] for artist in track["artists"]]
+        song_object, created = Song.objects.update_or_create(
+            song_id=track["id"],
+            defaults = {
+                "name": track["name"],
+                "artists": ", ".join(artist_names),
+            }
+        )
+        song_count += 1
+        songs.append(song_object)
+    playlist = Playlist.objects.get(playlist_id=playlist_id,spotify_user=spotify_account)
+    playlist.songs.add(*songs)
+    playlist.song_count = song_count
+    playlist.save()
+    print("Added playlist")
 
-            # playlist_song, created = Song.objects.update_or_create(
-            #     defaults={
-            #         "name": song["item"][""]
-            #     }
-            # )
+
 

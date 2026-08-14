@@ -16,10 +16,12 @@ Hand out access tokens after authentication to control rates
 
 
 Potential features and additions:
-
+- Page to determine user's music taste
 
 TO DO:
-Get playlists 
+Get playlists -- DONE
+Display each playlist's songs by dropdown -- DONE
+Grab genres of each song and keep track based on users?
 Get top tracks
 
 """
@@ -34,12 +36,14 @@ def home(request):
         if action == "disconnect": # handles logout button post request
             SpotifyAccount.objects.filter(user=user).delete()
             return redirect("home")
-
+    spotify_profile = SpotifyAccount.objects.filter(user=user).first()
+    if spotify_profile:         
+        playlists = spotify_profile.playlists.all().order_by('-song_count')
     context = {
         "user": user,
         "spotify_profile": SpotifyAccount.objects.filter(user=user).first(),
         "top_artists": "top_artists",
-        "playlist_count": "playlist_count",
+        "playlists": playlists,
     }
     return render(request, "home.html", context)
 def login_view(request): # also implement a way to get rid of logged in tokens when clicking log out
